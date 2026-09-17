@@ -1,0 +1,9 @@
+{
+  "name": "gold-poster-daily",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Posts the daily gold price poster to Telegram automatically",
+  "dependencies": {
+    "puppeteer": "^23.0.0"
+  }
+}
