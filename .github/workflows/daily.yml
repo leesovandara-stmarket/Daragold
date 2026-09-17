@@ -1,0 +1,43 @@
+name: Daily gold poster
+
+on:
+  schedule:
+    # 02:00 UTC = 09:00 in Cambodia (UTC+7). GitHub uses UTC only.
+    - cron: '0 2 * * *'
+  workflow_dispatch:        # lets you run it by hand to test
+
+permissions:
+  contents: write           # needed to remember yesterday's price
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install
+        run: npm install --no-audit --no-fund
+
+      - name: Make and send today's poster
+        env:
+          TG_TOKEN:   ${{ secrets.TG_TOKEN }}
+          TG_CHANNEL: ${{ secrets.TG_CHANNEL }}
+          TG_ALERT:   ${{ secrets.TG_ALERT }}
+          GOLDAPI_KEY: ${{ secrets.GOLDAPI_KEY }}
+          PRICE_URL:  ${{ secrets.PRICE_URL }}
+          MARKUP:     ${{ secrets.MARKUP }}
+        run: node scripts/post.js
+
+      - name: Remember today's price
+        run: |
+          if [ -n "$(git status --porcelain last.json)" ]; then
+            git config user.name  "gold-bot"
+            git config user.email "gold-bot@users.noreply.github.com"
+            git add last.json
+            git commit -m "price $(date -u +%F)"
+            git push
+          fi
